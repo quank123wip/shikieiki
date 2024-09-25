@@ -1,0 +1,94 @@
+#[inline]
+fn default_readables() {
+    [
+        "/etc/ld.so.nohwcap".to_string(),
+        "/etc/ld.so.preload".to_string(),
+        "/etc/ld.so.cache".to_string(),
+        "/usr/lib/locale/locale-archive".to_string(),
+        "/proc/self/exe".to_string(),
+        "/etc/timezone".to_string(),
+        "/usr/share/zoneinfo/".to_string(),
+        "/dev/random".to_string(),
+        "/dev/urandom".to_string(),
+        "/proc/meminfo".to_string(),
+        "/etc/localtime".to_string(),
+    ]
+}
+
+#[inline]
+fn default_writeables() {
+    ["/dev/null".to_string()]
+}
+
+#[inline]
+fn default_safe_syscalls() {
+    [
+        "read".to_string(),
+        "write".to_string(),
+        "readv".to_string(),
+        "writev".to_string(),
+        "close".to_string(),
+        "fstat".to_string(),
+        "lseek".to_string(),
+        "dup".to_string(),
+        "dup2".to_string(),
+        "dup3".to_string(),
+        "ioctl".to_string(),
+        "fcntl".to_string(),
+        "fadvise64".to_string(),
+        "pread64".to_string(),
+        "pwrite64".to_string(),
+        "mmap".to_string(),
+        "mprotect".to_string(),
+        "munmap".to_string(),
+        "brk".to_string(),
+        "mremap".to_string(),
+        "msync".to_string(),
+        "mincore".to_string(),
+        "madvise".to_string(),
+        "rt_sigaction".to_string(),
+        "rt_sigprocmask".to_string(),
+        "rt_sigreturn".to_string(),
+        "rt_sigpending".to_string(),
+        "sigaltstack".to_string(),
+        "getcwd".to_string(),
+        "exit".to_string(),
+        "exit_group".to_string(),
+        "arch_prctl".to_string(),
+        "gettimeofday".to_string(),
+        "getrlimit".to_string(),
+        "getrusage".to_string(),
+        "times".to_string(),
+        "time".to_string(),
+        "clock_gettime".to_string(),
+        "restart_syscall".to_string(),
+    ]
+}
+#[inline]
+fn default_syscall_traces() {
+    [
+        "execve".to_string(),
+        "execveat".to_string(),
+        "open".to_string(),
+        "openat".to_string(),
+        "unlink".to_string(),
+        "unlinkat".to_string(),
+        "readlink".to_string(),
+        "readlinkat".to_string(),
+        "lstat".to_string(),
+        "stat".to_string(),
+        "access".to_string(),
+        "faccessat".to_string(),
+    ]
+}
+
+#[inline]
+fn default_proc_syscalls() {
+    [
+        "clone".to_string(), 
+        "fork".to_string(), 
+        "vfork".to_string(), 
+        "nanosleep".to_string(), 
+        "execve".to_string(),
+    ]
+}
