@@ -1,9 +1,12 @@
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[command(name = "Aya Runner",  version = "0.1.0 Highly Responsive to Prayers", about = "A configurable runner fits in online judge tasks.")]
+#[command(
+    name = "Aya Runner",
+    version = "0.1.0 Highly Responsive to Prayers",
+    about = "A configurable runner fits in online judge tasks."
+)]
 struct Args {
-    
     #[arg(short, long, value_name = "FILE", default_value = "./config.json")]
     /// The path to the config file
     config: std::path::PathBuf,
@@ -16,7 +19,7 @@ struct Args {
 enum ConfigType {
     Json,
     Yaml,
-    Toml
+    Toml,
 }
 
 fn main() {
@@ -24,10 +27,14 @@ fn main() {
 
     let config_dir = args.config;
 
-    let config_type = config_dir.extension().unwrap();
+    let config_type = match config_dir.extension().unwrap().to_str().unwrap() {
+        "json" => ConfigType::Json,
+        "yaml" => ConfigType::Yaml,
+        "toml" => ConfigType::Toml,
+        _ => ConfigType::Json,
+    };
 
     let working_dir = args.path;
 
     let config_raw = std::fs::read_to_string(config_dir).unwrap();
-    
 }
