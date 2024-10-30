@@ -14,6 +14,14 @@ struct Args {
     #[arg(short, long, value_name = "DIRECTORY", default_value = "./")]
     /// The path to the working directory
     path: std::path::PathBuf,
+
+    #[arg(short, long, value_name = "RESULT_TYPE", default_value = "SIMPLE")]
+    /// The result type of the task
+    result_type: String,
+
+    #[arg(short, long, value_name = "FILE", default_value = "true")]
+    /// Decide whether to print the task log into stderr stream 
+    log: bool,
 }
 
 enum ConfigType {
