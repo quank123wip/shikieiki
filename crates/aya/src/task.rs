@@ -3,7 +3,14 @@ enum ProcedureRuntimeType {
     Parallel,
 }
 
-enum ProcedureCalculateStrategy {
+enum ProcedureResultType {
+    None,
+    STDBOOL,
+    STDPERC,
+    STDNUM
+}
+
+enum ProcedureResultCalculateStrategy {
     None,
     MAX,
     MIN,
@@ -31,7 +38,7 @@ struct Procedure {
     Results: Vec<i32>,
     Result: f64,
     ResultRatio: f64,
-    CalculateStrategy: ProcedureCalculateStrategy,
+    ResultCalculateStrategy: ProcedureCalculateStrategy,
     Finished: bool,
     Prev: Vec<Rc<RefCell<Procedure>>>,
     Next: Vec<Rc<RefCell<Procedure>>>,
