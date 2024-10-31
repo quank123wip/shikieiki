@@ -1,6 +1,6 @@
 enum ProcedureRuntimeType {
     Sequence,
-    Parallel
+    Parallel,
 }
 
 enum ProcedureCalculateStrategy {
@@ -22,7 +22,6 @@ enum ProcedureLogLevel {
 #[derive(Clone)]
 struct Procedure {
     RuntimeType: ProcedureRuntimeType,
-    Time: bool,
     Exec: Vec<String>,
     LogLevel: ProcedureLogLevel,
     Log: String,
@@ -33,4 +32,18 @@ struct Procedure {
     Finished: bool,
     Prev: Vec<Rc<RefCell<Procedure>>>,
     Next: Vec<Rc<RefCell<Procedure>>>,
+}
+
+#[derive(Clone)]
+struct Task {
+    Info: String,
+    Head: Rc<RefCell<Procedure>>,
+    Time: u32,
+    TimeLimit: u32,
+    Cwd: std::PathBuf,
+    Env: std::collections::HashMap,
+}
+
+impl Task {
+    fn Run() {}
 }
