@@ -22,6 +22,9 @@ enum ProcedureLogLevel {
 #[derive(Clone)]
 struct Procedure {
     RuntimeType: ProcedureRuntimeType,
+    CalcTime: bool,
+    Time: u32,
+    TimeLimit: u32,
     Exec: Vec<String>,
     LogLevel: ProcedureLogLevel,
     Log: String,
