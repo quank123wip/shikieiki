@@ -1,4 +1,10 @@
+use std::{fs::File, io::{BufReader, Read}, process};
+
 use clap::Parser;
+
+use serde_json;
+use serde_yaml;
+use toml;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -20,7 +26,7 @@ struct Args {
     result_type: String,
 
     #[arg(short, long, value_name = "FILE", default_value = "true")]
-    /// Decide whether to print the task log into stderr stream 
+    /// Decide whether to print the task log into stderr stream
     log: bool,
 }
 
@@ -33,9 +39,21 @@ enum ConfigType {
 fn main() {
     let args = Args::parse();
 
-    let config_dir = args.config;
+    let config_path = args.config;
 
-    let config_type = match config_dir.extension().unwrap().to_str().unwrap() {
+    let log = args.log;
+
+    let config_type = match config_path
+        .extension()
+        .unwrap_or_else(|| {
+            eprintln!("Problem parsing config arguments");
+            process::exit(1);
+        })
+        .to_str()
+        .unwrap_or_else(|| {
+            eprintln!("Problem parsing config arguments");
+            process::exit(1);
+        }) {
         "json" => ConfigType::Json,
         "yaml" => ConfigType::Yaml,
         "toml" => ConfigType::Toml,
@@ -44,5 +62,12 @@ fn main() {
 
     let working_dir = args.path;
 
-    let config_raw = std::fs::read_to_string(config_dir).unwrap();
+    let config_raw = File::open(config_path).unwrap_or_else(|err| {
+        eprintln!("Problem opening config file with error: {err}");
+        process::exit(1);
+    });
+
+    let config_reader = BufReader::new(config_raw);
+
+    //let config = match config_type 
 }
