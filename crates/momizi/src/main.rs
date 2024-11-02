@@ -70,54 +70,7 @@ fn main() {
 
     match args.mode {
         Mode::COMPARE => match args.output {
-            OutputType::FILE => {
-                let mut freader = BufReader::new(
-                    File::open(args.file.unwrap_or_else(|| {
-                        cmd.error(
-                            ErrorKind::MissingRequiredArgument,
-                            "Missing output file for comparison",
-                        )
-                        .exit()
-                    }))
-                    .unwrap_or_else(|err| {
-                        println!("File error {err}");
-                        cmd.error(
-                            ErrorKind::InvalidValue,
-                            "Cannot read output file for comparison",
-                        )
-                        .exit()
-                    }),
-                );
-                let ansreader = BufReader::new(
-                    File::open(args.answer.unwrap_or_else(|| {
-                        cmd.error(
-                            ErrorKind::MissingRequiredArgument,
-                            "Missing answer file for comparison",
-                        )
-                        .exit()
-                    }))
-                    .unwrap_or_else(|err| {
-                        println!("File error {err}");
-                        cmd.error(
-                            ErrorKind::InvalidValue,
-                            "Cannot read answer file for comparison",
-                        )
-                        .exit()
-                    }),
-                );
-                let mut fline = String::new();
-                let mut flag = true;
-                for aline in ansreader.lines() {
-                    if freader.read_line(&mut fline).is_err() {
-                        flag = false;
-                        break;
-                    }
-                    if aline.unwrap() != fline {
-                        flag = false;
-                        break;
-                    }
-                }
-                eprintln!("{flag}");
+            
             },
             OutputType::STDOUT => {
                 let mut output = BufReader::new(_stdout);
