@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Read, Seek};
 use std::process::Command;
 
 use clap::error::ErrorKind;
@@ -47,7 +47,7 @@ struct Args {
     file: Option<String>,
 
     #[arg(short, long)]
-    /// The answer for comparison.
+    /// The answer file for comparison.
     answer: Option<String>,
 
     #[arg()]
@@ -66,81 +66,141 @@ fn main() {
         .spawn()
         .unwrap();
 
-    let _stdout = child.stdout.unwrap();
+    let mut _stdout = child.stdout.unwrap();
 
     match args.mode {
-        Mode::COMPARE => match args.output {
+        Mode::COMPARE => {
+            let f = File::open(args.answer.unwrap_or_else(|| {
+                eprintln!("[Error] No answer file provided for compare mode.");
+                std::process::exit(1);
+            })).unwrap_or_else(|err| {
+                eprintln!("[Error] Cannot open answer file specified for compare mode.");
+                eprintln!("{err}");
+                std::process::exit(1);
+            });
             
-            },
-            OutputType::STDOUT => {
-                let mut output = BufReader::new(_stdout);
-                let ansreader = BufReader::new(
-                    File::open(args.answer.unwrap_or_else(|| {
-                        cmd.error(
-                            ErrorKind::MissingRequiredArgument,
-                            "Missing answer file for comparison",
-                        )
-                        .exit()
-                    }))
-                    .unwrap_or_else(|err| {
-                        println!("File error {err}");
-                        cmd.error(
-                            ErrorKind::InvalidValue,
-                            "Cannot read answer file for comparison",
-                        )
-                        .exit()
-                    }),
-                );
-                let mut line = String::new();
-                let mut flag = true;
-                for aline in ansreader.lines() {
-                    if output.read_line(&mut line).is_err() {
-                        flag = false;
-                        break;
-                    }
-                    if aline.unwrap() != line {
-                        flag = false;
-                        break;
-                    }
-                }
-                eprintln!("{flag}");
-            }
-        },
-        Mode::BOOL => {
-            let res = match args.output {
+            match args.output {
                 OutputType::FILE => {
-                    let mut freader = BufReader::new(
-                        File::open(args.file.unwrap_or_else(|| {
-                            cmd.error(
-                                ErrorKind::MissingRequiredArgument,
-                                "Missing output file for comparison",
-                            )
-                            .exit()
-                        }))
-                        .unwrap_or_else(|err| {
-                            println!("File error {err}");
-                            cmd.error(
-                                ErrorKind::InvalidValue,
-                                "Cannot read output file for comparison",
-                            )
-                            .exit()
-                        }),
-                    );
-                    let mut resRaw = String::new();
-                    freader.read_line(&mut resRaw);
-                    resRaw.to_ascii_lowercase() == "true"
+
                 },
                 OutputType::STDOUT => {
-                    let mut output = BufReader::new(_stdout);
-                    let mut resRaw = String::new();
-                    output.read_line(&mut resRaw);
-                    resRaw.to_ascii_lowercase() == "true"
+
+                }
+            }
+        }
+        Mode::BOOL => {
+            // Support true or false, case-insensitive
+            // Support 0 or 1
+            let result: String = match args.answer {
+                None => match args.output {
+                    OutputType::FILE => match args.file {
+                        None => {
+                            eprintln!("[Error] Missing output file arg for file mode.");
+                            eprintln!("Exiting...");
+                            std::process::exit(1);
+                        }
+                        Some(file) => {
+                            let mut f = File::open(file).unwrap_or_else(|err| {
+                                eprintln!("[Error] Cannot open provided file.");
+                                eprintln!("Exiting...");
+                                std::process::exit(1);
+                            });
+                            let mut res = String::new();
+                            f.read_to_string(&mut res);
+                            res
+                        }
+                    },
+                    OutputType::STDOUT => match args.file {
+                        None => {
+                            let mut res = String::new();
+                            _stdout.read_to_string(&mut res);
+                            res
+                        }
+                        Some(_) => {
+                            eprintln!("[Error] STDOUT mode doesn't require a file arg.");
+                            eprintln!("Exiting...");
+                            std::process::exit(1);
+                        }
+                    },
+                },
+                Some(_) => {
+                    eprintln!("[Error] Bool mode doesn't require a answer arg.");
+                    eprintln!("Exiting...");
+                    std::process::exit(1);
                 }
             };
-            eprintln!("{res}");
+            match result.to_ascii_lowercase().as_str() {
+                "0" => {
+                    println!("0");
+                    std::process::exit(0);
+                }
+                "1" => {
+                    println!("100");
+                    std::process::exit(0);
+                }
+                "true" => {
+                    println!("100");
+                    std::process::exit(0);
+                }
+                "false" => {
+                    println!("0");
+                    std::process::exit(0);
+                }
+                _ => {
+                    eprintln!("[Error] illegal result for bool mode.");
+                    println!("0");
+                    std::process::exit(1);
+                }
+            }
         }
         Mode::SCORE => {
-            // to be implement
+            // Support integer or decimal
+            let result: String = match args.answer {
+                None => match args.output {
+                    OutputType::FILE => match args.file {
+                        None => {
+                            eprintln!("[Error] Missing output file arg for file mode.");
+                            eprintln!("Exiting...");
+                            std::process::exit(1);
+                        }
+                        Some(file) => {
+                            let mut f = File::open(file).unwrap_or_else(|err| {
+                                eprintln!("[Error] Cannot open provided file.");
+                                eprintln!("Exiting...");
+                                std::process::exit(1);
+                            });
+                            let mut res = String::new();
+                            f.read_to_string(&mut res);
+                            res
+                        }
+                    },
+                    OutputType::STDOUT => match args.file {
+                        None => {
+                            let mut res = String::new();
+                            _stdout.read_to_string(&mut res);
+                            res
+                        }
+                        Some(_) => {
+                            eprintln!("[Error] STDOUT mode doesn't require a file arg.");
+                            eprintln!("Exiting...");
+                            std::process::exit(1);
+                        }
+                    },
+                },
+                Some(_) => {
+                    eprintln!("[Error] Score mode doesn't require a answer arg.");
+                    eprintln!("Exiting...");
+                    std::process::exit(1);
+                }
+            };
+            let res = result.parse::<f64>().unwrap_or_else(|err| {
+                eprintln!("[Error] Cannot parse the result.");
+                eprintln!("Exiting...");
+                std::process::exit(1);
+            });
+
+            println!("{res}");
+            std::process::exit(0);
         }
     }
 }
