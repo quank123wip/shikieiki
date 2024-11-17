@@ -66,17 +66,21 @@ fn main() {
     let child = Command::new("sh")
         .arg("-c")
         .arg(args.arg.as_str())
-        .spawn()
-        .unwrap();
+        .output()
+        .expect("failed to spawn child process");
 
-    let mut _stdout = child.stdout.unwrap();
+    let mut _stdout = String::from_utf8(child.stdout).unwrap_or_else(|_err| {
+        eprintln!("[Error] invalid child output.");
+        std::process::exit(1);
+    });
 
     match args.mode {
         Mode::COMPARE => {
             let mut f = File::open(args.answer.unwrap_or_else(|| {
                 eprintln!("[Error] No answer file provided for compare mode.");
                 std::process::exit(1);
-            })).unwrap_or_else(|err| {
+            }))
+            .unwrap_or_else(|err| {
                 eprintln!("[Error] Cannot open answer file specified for compare mode.");
                 eprintln!("{err}");
                 std::process::exit(1);
@@ -98,13 +102,14 @@ fn main() {
             });
 
             let mut freader = BufReader::new(f);
-            
+
             match args.output {
                 OutputType::FILE => {
                     let f = File::open(args.file.unwrap_or_else(|| {
                         eprintln!("[Error] No output file provided for compare mode.");
                         std::process::exit(1);
-                    })).unwrap_or_else(|err| {
+                    }))
+                    .unwrap_or_else(|err| {
                         eprintln!("[Error] Cannot open output file specified for compare mode.");
                         eprintln!("{err}");
                         std::process::exit(1);
@@ -116,16 +121,22 @@ fn main() {
                         let mut b = String::new();
 
                         let reference = rd.by_ref();
-                        reference.take(1).read_to_string(&mut a).unwrap_or_else(|_err| {
-                            eprintln!("[Error] Error when reading the output file.");
-                            std::process::exit(1);
-                        });
+                        reference
+                            .take(1)
+                            .read_to_string(&mut a)
+                            .unwrap_or_else(|_err| {
+                                eprintln!("[Error] Error when reading the output file.");
+                                std::process::exit(1);
+                            });
 
                         let reference = freader.by_ref();
-                        reference.take(1).read_to_string(&mut b).unwrap_or_else(|_err| {
-                            eprintln!("[Error] Error when reading the answer file.");
-                            std::process::exit(1);
-                        });
+                        reference
+                            .take(1)
+                            .read_to_string(&mut b)
+                            .unwrap_or_else(|_err| {
+                                eprintln!("[Error] Error when reading the answer file.");
+                                std::process::exit(1);
+                            });
 
                         if a != b {
                             println!("0");
@@ -135,25 +146,21 @@ fn main() {
 
                     println!("100");
                     std::process::exit(0);
-                },
+                }
                 OutputType::STDOUT => {
-                    let mut rd = BufReader::new(_stdout);
-
-                    for _i in 1..len {
-                        let mut a = String::new();
+                    for i in 1..len {
                         let mut b = String::new();
 
-                        let reference = rd.by_ref();
-                        reference.take(1).read_to_string(&mut a).unwrap_or_else(|_err| {
-                            eprintln!("[Error] Error when reading the output file.");
-                            std::process::exit(1);
-                        });
+                        let a = _stdout[(i - 1) as usize .. i as usize].to_string();
 
                         let reference = freader.by_ref();
-                        reference.take(1).read_to_string(&mut b).unwrap_or_else(|_err| {
-                            eprintln!("[Error] Error when reading the answer file.");
-                            std::process::exit(1);
-                        });
+                        reference
+                            .take(1)
+                            .read_to_string(&mut b)
+                            .unwrap_or_else(|_err| {
+                                eprintln!("[Error] Error when reading the answer file.");
+                                std::process::exit(1);
+                            });
 
                         if a != b {
                             println!("0");
@@ -192,14 +199,7 @@ fn main() {
                         }
                     },
                     OutputType::STDOUT => match args.file {
-                        None => {
-                            let mut res = String::new();
-                            _stdout.read_to_string(&mut res).unwrap_or_else(|_err| {
-                                eprintln!("[Error] Error when reading the stdout.");
-                                std::process::exit(1);
-                            });
-                            res
-                        }
+                        None => _stdout,
                         Some(_) => {
                             eprintln!("[Error] STDOUT mode doesn't require a file arg.");
                             eprintln!("Exiting...");
@@ -262,14 +262,7 @@ fn main() {
                         }
                     },
                     OutputType::STDOUT => match args.file {
-                        None => {
-                            let mut res = String::new();
-                            _stdout.read_to_string(&mut res).unwrap_or_else(|_err| {
-                                eprintln!("[Error] Error when reading the answer file.");
-                                std::process::exit(1);
-                            });
-                            res
-                        }
+                        None => _stdout,
                         Some(_) => {
                             eprintln!("[Error] STDOUT mode doesn't require a file arg.");
                             eprintln!("Exiting...");
