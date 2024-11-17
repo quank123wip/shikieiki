@@ -1,9 +1,12 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read, Seek};
+use std::io::{BufReader, Read, Seek};
 use std::process::Command;
 
-use clap::error::ErrorKind;
-use clap::{CommandFactory, Parser, ValueEnum};
+use clap::{Parser, ValueEnum};
+
+pub mod util;
+
+use crate::util::find_blankless_end;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
 enum OutputType {
@@ -58,7 +61,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let mut cmd = Args::command();
+    // let mut cmd = Args::command();
 
     let child = Command::new("sh")
         .arg("-c")
@@ -70,7 +73,7 @@ fn main() {
 
     match args.mode {
         Mode::COMPARE => {
-            let f = File::open(args.answer.unwrap_or_else(|| {
+            let mut f = File::open(args.answer.unwrap_or_else(|| {
                 eprintln!("[Error] No answer file provided for compare mode.");
                 std::process::exit(1);
             })).unwrap_or_else(|err| {
@@ -78,13 +81,88 @@ fn main() {
                 eprintln!("{err}");
                 std::process::exit(1);
             });
+
+            let fc = f.try_clone().unwrap_or_else(|_err| {
+                eprintln!("[Error] Error when reading the answer file.");
+                std::process::exit(1);
+            });
+
+            let len = find_blankless_end(fc).unwrap_or_else(|_err| {
+                eprintln!("[Error] Error reading the answer file.");
+                std::process::exit(1);
+            });
+
+            f.seek(std::io::SeekFrom::Start(0)).unwrap_or_else(|_err| {
+                eprintln!("[Error] Error when reading the answer file.");
+                std::process::exit(1);
+            });
+
+            let mut freader = BufReader::new(f);
             
             match args.output {
                 OutputType::FILE => {
+                    let f = File::open(args.file.unwrap_or_else(|| {
+                        eprintln!("[Error] No output file provided for compare mode.");
+                        std::process::exit(1);
+                    })).unwrap_or_else(|err| {
+                        eprintln!("[Error] Cannot open output file specified for compare mode.");
+                        eprintln!("{err}");
+                        std::process::exit(1);
+                    });
+                    let mut rd = BufReader::new(f);
 
+                    for _i in 1..len {
+                        let mut a = String::new();
+                        let mut b = String::new();
+
+                        let reference = rd.by_ref();
+                        reference.take(1).read_to_string(&mut a).unwrap_or_else(|_err| {
+                            eprintln!("[Error] Error when reading the output file.");
+                            std::process::exit(1);
+                        });
+
+                        let reference = freader.by_ref();
+                        reference.take(1).read_to_string(&mut b).unwrap_or_else(|_err| {
+                            eprintln!("[Error] Error when reading the answer file.");
+                            std::process::exit(1);
+                        });
+
+                        if a != b {
+                            println!("0");
+                            std::process::exit(0);
+                        }
+                    }
+
+                    println!("100");
+                    std::process::exit(0);
                 },
                 OutputType::STDOUT => {
+                    let mut rd = BufReader::new(_stdout);
 
+                    for _i in 1..len {
+                        let mut a = String::new();
+                        let mut b = String::new();
+
+                        let reference = rd.by_ref();
+                        reference.take(1).read_to_string(&mut a).unwrap_or_else(|_err| {
+                            eprintln!("[Error] Error when reading the output file.");
+                            std::process::exit(1);
+                        });
+
+                        let reference = freader.by_ref();
+                        reference.take(1).read_to_string(&mut b).unwrap_or_else(|_err| {
+                            eprintln!("[Error] Error when reading the answer file.");
+                            std::process::exit(1);
+                        });
+
+                        if a != b {
+                            println!("0");
+                            std::process::exit(0);
+                        }
+                    }
+
+                    println!("100");
+                    std::process::exit(0);
                 }
             }
         }
@@ -100,20 +178,26 @@ fn main() {
                             std::process::exit(1);
                         }
                         Some(file) => {
-                            let mut f = File::open(file).unwrap_or_else(|err| {
+                            let mut f = File::open(file).unwrap_or_else(|_err| {
                                 eprintln!("[Error] Cannot open provided file.");
                                 eprintln!("Exiting...");
                                 std::process::exit(1);
                             });
                             let mut res = String::new();
-                            f.read_to_string(&mut res);
+                            f.read_to_string(&mut res).unwrap_or_else(|_err| {
+                                eprintln!("[Error] Error when reading the output file.");
+                                std::process::exit(1);
+                            });
                             res
                         }
                     },
                     OutputType::STDOUT => match args.file {
                         None => {
                             let mut res = String::new();
-                            _stdout.read_to_string(&mut res);
+                            _stdout.read_to_string(&mut res).unwrap_or_else(|_err| {
+                                eprintln!("[Error] Error when reading the stdout.");
+                                std::process::exit(1);
+                            });
                             res
                         }
                         Some(_) => {
@@ -164,20 +248,26 @@ fn main() {
                             std::process::exit(1);
                         }
                         Some(file) => {
-                            let mut f = File::open(file).unwrap_or_else(|err| {
+                            let mut f = File::open(file).unwrap_or_else(|_err| {
                                 eprintln!("[Error] Cannot open provided file.");
                                 eprintln!("Exiting...");
                                 std::process::exit(1);
                             });
                             let mut res = String::new();
-                            f.read_to_string(&mut res);
+                            f.read_to_string(&mut res).unwrap_or_else(|_err| {
+                                eprintln!("[Error] Error when reading the output file.");
+                                std::process::exit(1);
+                            });
                             res
                         }
                     },
                     OutputType::STDOUT => match args.file {
                         None => {
                             let mut res = String::new();
-                            _stdout.read_to_string(&mut res);
+                            _stdout.read_to_string(&mut res).unwrap_or_else(|_err| {
+                                eprintln!("[Error] Error when reading the answer file.");
+                                std::process::exit(1);
+                            });
                             res
                         }
                         Some(_) => {
@@ -193,7 +283,7 @@ fn main() {
                     std::process::exit(1);
                 }
             };
-            let res = result.parse::<f64>().unwrap_or_else(|err| {
+            let res = result.parse::<f64>().unwrap_or_else(|_err| {
                 eprintln!("[Error] Cannot parse the result.");
                 eprintln!("Exiting...");
                 std::process::exit(1);
