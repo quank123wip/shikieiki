@@ -1,5 +1,8 @@
 # Momizi 🌸🐺
 
+![Rust](https://img.shields.io/badge/rust-orange?style=flat&logo=rust&logoColor=white)
+![License](https://img.shields.io/badge/license-GPL--3.0-blue)
+
 > An autumn waterfall. I think the thing waterfalls convey the most is autumn.
 
 Momizi is a small executer fits in judge tasks.
