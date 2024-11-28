@@ -10,58 +10,58 @@ enum ProcedureRuntimeType {
 #[derive(Clone)]
 enum ProcedureResultType {
     None,
-    STDBOOL,
-    STDPERC,
-    STDNUM
+    StdBool,
+    StdPerc,
+    StdNum,
 }
 
 #[derive(Clone)]
 enum ProcedureResultCalculateStrategy {
     None,
-    MAX,
-    MIN,
-    SUM,
-    AVER,
-    MUL,
+    Max,
+    Min,
+    Sum,
+    Avg,
+    Mul,
 }
 
 #[derive(Clone)]
 enum ProcedureLogLevel {
-    ALL,
-    INFO,
-    WARNING,
-    ERROR,
+    All,
+    Info,
+    Warning,
+    Error,
 }
 
 #[derive(Clone)]
 struct Procedure {
-    RuntimeType: ProcedureRuntimeType,
-    CalcTime: bool,
-    Time: u32,
-    TimeLimit: u32,
-    Exec: Vec<String>,
-    LogLevel: ProcedureLogLevel,
-    Log: String,
-    Results: Vec<i32>,
-    Result: f64,
-    ResultRatio: f64,
-    ResultCalculateStrategy: ProcedureResultCalculateStrategy,
-    Finished: bool,
-    Prev: Vec<Rc<RefCell<Procedure>>>,
-    Next: Vec<Rc<RefCell<Procedure>>>,
+    runtime_type: ProcedureRuntimeType,
+    calc_time: bool,
+    time: u32,
+    time_limit: u32,
+    exec: Vec<String>,
+    log_level: ProcedureLogLevel,
+    log: String,
+    results: Vec<i32>,
+    result: f64,
+    result_ratio: f64,
+    result_calculate_strategy: ProcedureResultCalculateStrategy,
+    finished: bool,
+    prev: Vec<Rc<RefCell<Procedure>>>,
+    next: Vec<Rc<RefCell<Procedure>>>,
 }
 
 #[derive(Clone)]
 struct Task {
-    Info: String,
-    Head: Rc<RefCell<Procedure>>,
-    Time: u32,
-    TimeLimit: u32,
-    Result: f64,
-    Cwd: std::path::PathBuf,
-    Env: std::collections::HashMap<String, String>,
+    info: String,
+    head: Rc<RefCell<Procedure>>,
+    time: u32,
+    time_limit: u32,
+    result: f64,
+    cwd: std::path::PathBuf,
+    env: std::collections::HashMap<String, String>,
 }
 
 impl Task {
-    fn Run() {}
+    fn run() {}
 }
