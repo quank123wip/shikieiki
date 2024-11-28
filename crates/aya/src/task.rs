@@ -1,8 +1,13 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
+#[derive(Clone)]
 enum ProcedureRuntimeType {
     Sequence,
     Parallel,
 }
 
+#[derive(Clone)]
 enum ProcedureResultType {
     None,
     STDBOOL,
@@ -10,6 +15,7 @@ enum ProcedureResultType {
     STDNUM
 }
 
+#[derive(Clone)]
 enum ProcedureResultCalculateStrategy {
     None,
     MAX,
@@ -19,6 +25,7 @@ enum ProcedureResultCalculateStrategy {
     MUL,
 }
 
+#[derive(Clone)]
 enum ProcedureLogLevel {
     ALL,
     INFO,
@@ -38,7 +45,7 @@ struct Procedure {
     Results: Vec<i32>,
     Result: f64,
     ResultRatio: f64,
-    ResultCalculateStrategy: ProcedureCalculateStrategy,
+    ResultCalculateStrategy: ProcedureResultCalculateStrategy,
     Finished: bool,
     Prev: Vec<Rc<RefCell<Procedure>>>,
     Next: Vec<Rc<RefCell<Procedure>>>,
@@ -50,8 +57,9 @@ struct Task {
     Head: Rc<RefCell<Procedure>>,
     Time: u32,
     TimeLimit: u32,
-    Cwd: std::PathBuf,
-    Env: std::collections::HashMap,
+    Result: f64,
+    Cwd: std::path::PathBuf,
+    Env: std::collections::HashMap<String, String>,
 }
 
 impl Task {

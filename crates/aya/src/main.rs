@@ -2,6 +2,8 @@ use std::{fs::File, io::BufReader, process};
 
 use clap::Parser;
 
+mod task;
+
 #[derive(Parser, Debug)]
 #[command(
     name = "Aya Runner",
