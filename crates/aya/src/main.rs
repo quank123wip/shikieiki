@@ -4,6 +4,8 @@ use clap::Parser;
 
 mod task;
 
+mod node;
+
 #[derive(Parser, Debug)]
 #[command(
     name = "Aya Runner",
